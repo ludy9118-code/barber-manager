@@ -1,0 +1,191 @@
+[
+  {
+    "id": "1824e245-34a3-4e7c-bd82-0fd28a3b8fc4",
+    "createdAt": "2026-04-21T02:02:26.477Z",
+    "status": "pending",
+    "fullName": "Cliente Prueba",
+    "procedure": "Keratina de prueba",
+    "dreamResult": "Cabello sin frizz",
+    "referencePhotoPath": "",
+    "hairHistory": [
+      "Keratinas"
+    ],
+    "hairHistoryOther": "",
+    "currentPhotoPath": "",
+    "preferredDates": "Martes tarde",
+    "clientPhone": "",
+    "adminNotes": "",
+    "availableSlots": [],
+    "notifiedAt": "",
+    "confirmedSlot": "",
+    "slotConfirmedAt": "",
+    "slotAccepted": null,
+    "treatmentsDone": [],
+    "accountingEntries": [],
+    "productsUsed": [],
+    "pushSubscriptions": [],
+    "notificationLog": []
+  },
+  {
+    "id": "3bc0bb76-5671-4091-90db-45d4403ee117",
+    "createdAt": "2026-04-21T02:03:19.957Z",
+    "status": "accepted",
+    "fullName": "Cliente Prueba",
+    "procedure": "Keratina de prueba",
+    "dreamResult": "Cabello sin frizz",
+    "referencePhotoPath": "",
+    "hairHistory": [
+      "Keratinas"
+    ],
+    "hairHistoryOther": "",
+    "currentPhotoPath": "",
+    "preferredDates": "Martes tarde",
+    "clientPhone": "",
+    "adminNotes": "",
+    "availableSlots": [],
+    "notifiedAt": "",
+    "confirmedSlot": "",
+    "slotConfirmedAt": "",
+    "slotAccepted": null,
+    "treatmentsDone": [
+      {
+        "id": "2066119d-3bcf-42ed-9fa7-81533422d39d",
+        "treatmentId": "keratina",
+        "treatmentName": "Keratina",
+        "performedAt": "2026-04-21",
+        "notes": "Prueba automatica"
+      }
+    ],
+    "accountingEntries": [],
+    "productsUsed": [],
+    "pushSubscriptions": [
+      {
+        "endpoint": "https://example.invalid/push/1776737000349",
+        "keys": {
+          "p256dh": "test",
+          "auth": "test"
+        }
+      }
+    ],
+    "notificationLog": []
+  },
+  {
+    "id": "9dec8288-f0a6-46b6-a364-9fe669c7ea8d",
+    "createdAt": "2026-04-21T02:13:47.557Z",
+    "status": "accepted",
+    "fullName": "juan molina",
+    "procedure": "dwdwd",
+    "dreamResult": "dwdwdwd",
+    "referencePhotoPath": "",
+    "hairHistory": [
+      "Keratinas",
+      "Tintes",
+      "Botox capilar",
+      "Decoloraciones",
+      "Alisados",
+      "Mechas o balayage"
+    ],
+    "hairHistoryOther": "dwdw",
+    "currentPhotoPath": "",
+    "preferredDates": "mañana a las 11 ",
+    "clientPhone": "",
+    "adminNotes": "",
+    "availableSlots": [],
+    "notifiedAt": "",
+    "confirmedSlot": "",
+    "slotConfirmedAt": "",
+    "slotAccepted": null,
+    "treatmentsDone": [
+      {
+        "id": "ae8f284c-d647-4ee6-b270-d40a3f9b2ff0",
+        "treatmentId": "keratina",
+        "treatmentName": "Keratina",
+        "performedAt": "2026-04-21",
+        "notes": ""
+      },
+      {
+        "id": "1db3ba11-b00e-4596-9f14-6a13b7b7837e",
+        "treatmentId": "decoloracion",
+        "treatmentName": "Decoloración",
+        "performedAt": "2026-04-21",
+        "notes": "ijio"
+      }
+    ],
+    "accountingEntries": [
+      {
+        "id": "58956864-3fd3-44bd-9b5b-a7e1b39d9ae8",
+        "service": "keratina",
+        "amount": 20,
+        "performedBy": "juana",
+        "performedAt": "2026-04-21",
+        "notes": ""
+      }
+    ],
+    "productsUsed": [],
+    "pushSubscriptions": [],
+    "notificationLog": []
+  },
+  {
+    "id": "d5e8199a-9216-41c0-aad1-63291737df38",
+    "createdAt": "2026-04-21T02:59:30.370Z",
+    "status": "accepted",
+    "fullName": "juan molina 2",
+    "procedure": "dswdw",
+    "dreamResult": "eeffe",
+    "referencePhotoPath": "",
+    "hairHistory": [
+      "Keratinas",
+      "Tintes",
+      "Botox capilar"
+    ],
+    "hairHistoryOther": "",
+    "currentPhotoPath": "",
+    "preferredDates": "eef",
+    "clientPhone": "",
+    "adminNotes": "",
+    "availableSlots": [
+      "mañana"
+    ],
+    "notifiedAt": "2026-04-21T03:00:32.883Z",
+    "confirmedSlot": "",
+    "slotConfirmedAt": "",
+    "slotAccepted": null,
+    "treatmentsDone": [
+      {
+        "id": "b770f7c4-bf19-4ee7-b5c3-ae3ac8e04a3c",
+        "treatmentId": "keratina",
+        "treatmentName": "Keratina",
+        "performedAt": "2026-04-21",
+        "notes": ""
+      },
+      {
+        "id": "232eb034-442d-487b-aae9-35baa715a68c",
+        "treatmentId": "decoloracion",
+        "treatmentName": "Decoloración",
+        "performedAt": "2026-04-21",
+        "notes": "joo"
+      }
+    ],
+    "accountingEntries": [
+      {
+        "id": "a07150fc-b2b6-4573-a63e-24032e7358f1",
+        "service": "keratina",
+        "amount": 20000,
+        "performedBy": "juanita perez",
+        "performedAt": "2026-04-21",
+        "notes": ""
+      },
+      {
+        "id": "52c4142f-1d35-4f6c-b4b6-819a4fa099d3",
+        "service": "ytyty",
+        "amount": 454545,
+        "performedBy": "juana",
+        "performedAt": "2026-04-21",
+        "notes": ""
+      }
+    ],
+    "productsUsed": [],
+    "pushSubscriptions": [],
+    "notificationLog": []
+  }
+]

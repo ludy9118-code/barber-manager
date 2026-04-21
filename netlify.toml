@@ -1,0 +1,13 @@
+[build]
+command = "npm run build"
+publish = ".next"
+
+[build.environment]
+NODE_VERSION = "18.x"
+NPM_VERSION = "10.x"
+
+# Rewrite para SPA (Single Page App)
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
