@@ -1,13 +1,16 @@
+# Netlify configuration for Next.js
+# See: https://docs.netlify.com/integrations/frameworks/next-js/
+
 [build]
 command = "npm run build"
 publish = ".next"
 
 [build.environment]
-NODE_VERSION = "18.x"
-NPM_VERSION = "10.x"
+NODE_VERSION = "18.17.0"
 
-# Rewrite para SPA (Single Page App)
 [[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
+
+
