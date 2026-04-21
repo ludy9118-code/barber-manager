@@ -27,73 +27,87 @@ export async function POST(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { id } = await context.params;
+  try {
+    if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { id } = await context.params;
 
-  const body = await req.json().catch(() => null) as {
-    productId: string;
-    quantity: number;
-    usedBy?: string;
-  } | null;
+    const body = await req.json().catch(() => null) as {
+      productId: string;
+      quantity: number;
+      usedBy?: string;
+    } | null;
 
-  if (!body?.productId || !body.quantity || body.quantity <= 0) {
-    return NextResponse.json({ error: 'productId y quantity (> 0) son obligatorios.' }, { status: 400 });
-  }
+    if (!body?.productId || !body.quantity || body.quantity <= 0) {
+      return NextResponse.json({ error: 'productId y quantity (> 0) son obligatorios.' }, { status: 400 });
+    }
 
-  const appointment = getAppointmentById(id);
-  if (!appointment) return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+    const appointment = getAppointmentById(id);
+    if (!appointment) return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
 
-  const product = getProductById(body.productId);
-  if (!product) return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
+    const product = getProductById(body.productId);
+    if (!product) return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
 
-  if (product.stock < body.quantity) {
-    return NextResponse.json(
-      { error: `Stock insuficiente. Disponible: ${product.stock} ${product.unit}.` },
-      { status: 409 }
-    );
-  }
+    if (product.stock < body.quantity) {
+      return NextResponse.json(
+        { error: `Stock insuficiente. Disponible: ${product.stock} ${product.unit}.` },
+        { status: 409 }
+      );
+    }
 
-  const entry: AppointmentProduct = {
-    id: randomUUID(),
-    productId: product.id,
-    productName: product.name,
-    brand: product.brand,
-    quantity: body.quantity,
-    unit: product.unit,
-    costPrice: product.costPrice,
-    salePrice: product.salePrice,
-    usedAt: new Date().toISOString(),
-    usedBy: body.usedBy?.trim() ?? '',
-  };
-
-  // Deduct from inventory
-  const updatedProduct = adjustStock(product.id, -body.quantity);
-
-  if (updatedProduct) {
-    addInventoryMovement({
+    const entry: AppointmentProduct = {
+      id: randomUUID(),
       productId: product.id,
       productName: product.name,
-      barcode: product.barcode,
-      unit: product.unit,
+      brand: product.brand,
       quantity: body.quantity,
-      type: 'sale',
-      reason: 'Salida por consumo en caja',
-      by: body.usedBy?.trim() ?? 'Profesional',
-      appointmentId: id,
-      remainingStock: updatedProduct.stock,
+      unit: product.unit,
+      costPrice: product.costPrice,
+      salePrice: product.salePrice,
+      usedAt: new Date().toISOString(),
+      usedBy: body.usedBy?.trim() ?? '',
+    };
+
+    // Deduct from inventory
+    const updatedProduct = adjustStock(product.id, -body.quantity);
+
+    if (updatedProduct) {
+      addInventoryMovement({
+        productId: product.id,
+        productName: product.name,
+        barcode: product.barcode,
+        unit: product.unit,
+        quantity: body.quantity,
+        type: 'sale',
+        reason: 'Salida por consumo en caja',
+        by: body.usedBy?.trim() ?? 'Profesional',
+        appointmentId: id,
+        remainingStock: updatedProduct.stock,
+      });
+    }
+
+    // Add to appointment
+    await updateAppointment(id, {
+      productsUsed: [...(appointment.productsUsed ?? []), entry],
     });
+
+    return NextResponse.json({
+      ok: true,
+      entry,
+      remainingStock: updatedProduct?.stock ?? Math.max(0, product.stock - body.quantity),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Error interno';
+    const isReadOnlyFs = /EROFS|read-only file system|EACCES/i.test(message);
+    return NextResponse.json(
+      {
+        error: isReadOnlyFs
+          ? 'No se pudo guardar la venta en este deploy. El almacenamiento por archivos no permite escritura en produccion.'
+          : 'No se pudo registrar el producto consumido.',
+        detail: message,
+      },
+      { status: 500 }
+    );
   }
-
-  // Add to appointment
-  await updateAppointment(id, {
-    productsUsed: [...(appointment.productsUsed ?? []), entry],
-  });
-
-  return NextResponse.json({
-    ok: true,
-    entry,
-    remainingStock: updatedProduct?.stock ?? Math.max(0, product.stock - body.quantity),
-  });
 }
 
 // DELETE — remove a product entry and restore stock

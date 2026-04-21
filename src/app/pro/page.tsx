@@ -244,12 +244,25 @@ export default function ProPage() {
   const svcTotal = services.reduce((s, sv) => s + sv.amount, 0);
   const grandTotal = cartTotal + svcTotal;
 
+  const readApiError = async (res: Response | null, fallback: string) => {
+    if (!res) return 'No se pudo conectar con el servidor.';
+
+    const contentType = res.headers.get('content-type') ?? '';
+    if (contentType.includes('application/json')) {
+      const json = await res.json().catch(() => ({} as { error?: string }));
+      if (json?.error && typeof json.error === 'string') return json.error;
+    }
+
+    const text = await res.text().catch(() => '');
+    if (/EROFS|read-only file system|EACCES/i.test(text)) {
+      return 'El servidor no permite guardar cambios de inventario/factura en produccion. Este deploy necesita base de datos para registrar ventas.';
+    }
+
+    return fallback;
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0 && services.length === 0) return;
-    if (!regApptId) {
-      setCheckoutError('Selecciona un cliente para generar factura y registrar el consumo en su tratamiento.');
-      return;
-    }
     if (!regProfessional.trim()) {
       setCheckoutError('Ingresa el nombre del profesional.');
       return;
@@ -276,8 +289,7 @@ export default function ProPage() {
         }).catch(() => null);
 
         if (!res?.ok) {
-          const err = await res?.json().catch(() => ({}));
-          errors.push(err?.error ?? `No se pudo descontar ${item.productName}.`);
+          errors.push(await readApiError(res, `No se pudo descontar ${item.productName}.`));
         }
       } else {
         // Anonymous sale: deduct stock directly
@@ -288,7 +300,7 @@ export default function ProPage() {
         }).catch(() => null);
 
         if (!res?.ok) {
-          errors.push(`No se pudo descontar ${item.productName}.`);
+          errors.push(await readApiError(res, `No se pudo descontar ${item.productName}.`));
         }
       }
     }
@@ -308,8 +320,7 @@ export default function ProPage() {
         }).catch(() => null);
 
         if (!res?.ok) {
-          const err = await res?.json().catch(() => ({}));
-          errors.push(err?.error ?? `No se pudo guardar el servicio ${sv.service}.`);
+          errors.push(await readApiError(res, `No se pudo guardar el servicio ${sv.service}.`));
         }
       }
     }
