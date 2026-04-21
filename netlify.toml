@@ -6,7 +6,7 @@ command = "npm run build"
 publish = ".next"
 
 [build.environment]
-NODE_VERSION = "18.17.0"
+NODE_VERSION = "20.10.0"
 
 [[redirects]]
 from = "/*"
