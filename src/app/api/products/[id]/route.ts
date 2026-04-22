@@ -18,9 +18,15 @@ export async function GET(
   const { id } = await context.params;
 
   if (isDbEnabled()) {
-    const product = await prisma.product.findUnique({ where: { id } });
-    if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    return NextResponse.json(product);
+    try {
+      const product = await prisma.product.findUnique({ where: { id } });
+      if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json(product);
+    } catch {
+      const product = getProductById(id);
+      if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json(product);
+    }
   }
 
   const product = getProductById(id);

@@ -15,11 +15,15 @@ export async function GET(req: NextRequest) {
   const limit = Number(searchParams.get('limit')) || 50;
 
   if (isDbEnabled()) {
-    const items = await prisma.inventoryMovement.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: Math.max(1, Math.min(limit, 200)),
-    });
-    return NextResponse.json(items);
+    try {
+      const items = await prisma.inventoryMovement.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: Math.max(1, Math.min(limit, 200)),
+      });
+      return NextResponse.json(items);
+    } catch {
+      return NextResponse.json(getInventoryMovements(limit));
+    }
   }
 
   return NextResponse.json(getInventoryMovements(limit));

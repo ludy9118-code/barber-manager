@@ -16,14 +16,24 @@ export async function GET(req: NextRequest) {
   const barcode = searchParams.get('barcode');
 
   if (isDbEnabled()) {
-    if (barcode) {
-      const product = await prisma.product.findFirst({ where: { barcode } });
-      if (!product) return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
-      return NextResponse.json(product);
-    }
+    try {
+      if (barcode) {
+        const product = await prisma.product.findFirst({ where: { barcode } });
+        if (!product) return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
+        return NextResponse.json(product);
+      }
 
-    const products = await prisma.product.findMany({ orderBy: { createdAt: 'desc' } });
-    return NextResponse.json(products);
+      const products = await prisma.product.findMany({ orderBy: { createdAt: 'desc' } });
+      return NextResponse.json(products);
+    } catch {
+      if (barcode) {
+        const product = getProductByBarcode(barcode);
+        if (!product) return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
+        return NextResponse.json(product);
+      }
+
+      return NextResponse.json(getAllProducts());
+    }
   }
 
   if (barcode) {

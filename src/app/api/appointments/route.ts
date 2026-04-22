@@ -15,8 +15,13 @@ export async function GET(req: NextRequest) {
   }
 
   if (isDbEnabled()) {
-    const appointments = await prisma.appointment.findMany({ orderBy: { createdAt: 'desc' } });
-    return NextResponse.json(appointments);
+    try {
+      const appointments = await prisma.appointment.findMany({ orderBy: { createdAt: 'desc' } });
+      return NextResponse.json(appointments);
+    } catch {
+      // If the remote database is unavailable in production, keep the panel readable.
+      return NextResponse.json(getAllAppointments());
+    }
   }
 
   return NextResponse.json(getAllAppointments());

@@ -9,10 +9,17 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   const { id } = await context.params;
 
   if (isDbEnabled()) {
-    const appointment = await prisma.appointment.findUnique({ where: { id } });
-    if (!appointment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    const safeData = { ...appointment, pushSubscriptions: undefined };
-    return NextResponse.json(safeData);
+    try {
+      const appointment = await prisma.appointment.findUnique({ where: { id } });
+      if (!appointment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      const safeData = { ...appointment, pushSubscriptions: undefined };
+      return NextResponse.json(safeData);
+    } catch {
+      const appointment = getAppointmentById(id);
+      if (!appointment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      const safeData = { ...appointment, pushSubscriptions: undefined };
+      return NextResponse.json(safeData);
+    }
   }
 
   const appointment = getAppointmentById(id);
