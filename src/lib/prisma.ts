@@ -5,11 +5,26 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
+function normalizeDatabaseUrl(raw: string | undefined): string {
+  if (!raw) return '';
+  const cleaned = raw.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+  if (cleaned.startsWith('postgres://')) {
+    return cleaned.replace(/^postgres:\/\//, 'postgresql://');
+  }
+  return cleaned;
+}
+
+const rawDatabaseUrl =
+  process.env.DATABASE_URL
+  ?? process.env.NETLIFY_DATABASE_URL
+  ?? process.env.POSTGRES_URL;
+
+const databaseUrl = normalizeDatabaseUrl(rawDatabaseUrl);
+const hasDatabaseUrl = Boolean(databaseUrl);
 
 const prismaClient = hasDatabaseUrl
   ? (global.prisma ?? new PrismaClient({
-      adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+      adapter: new PrismaPg({ connectionString: databaseUrl }),
     }))
   : null;
 

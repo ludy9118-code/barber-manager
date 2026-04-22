@@ -7,7 +7,11 @@ import { Prisma } from '@prisma/client';
 type JsonArray<T> = T[];
 
 export function isDbEnabled() {
-  return Boolean(process.env.DATABASE_URL);
+  return Boolean(
+    process.env.DATABASE_URL
+    ?? process.env.NETLIFY_DATABASE_URL
+    ?? process.env.POSTGRES_URL
+  );
 }
 
 export function asArray<T>(value: unknown): JsonArray<T> {

@@ -15,7 +15,12 @@ function normalizeDatabaseUrl(raw: string | undefined): string {
   return cleaned;
 }
 
-const databaseUrl = normalizeDatabaseUrl(process.env.DATABASE_URL);
+const rawDatabaseUrl =
+  process.env.DATABASE_URL
+  ?? process.env.NETLIFY_DATABASE_URL
+  ?? process.env.POSTGRES_URL;
+
+const databaseUrl = normalizeDatabaseUrl(rawDatabaseUrl);
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
