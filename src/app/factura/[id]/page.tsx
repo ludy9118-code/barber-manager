@@ -3,10 +3,33 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ShareButton from './ShareButton';
 import PrintButton from './PrintButton';
+import { prisma } from '@/lib/prisma';
+import { asArray, isDbEnabled } from '@/lib/db-helpers';
+
+async function getAppointmentForInvoice(id: string) {
+  if (isDbEnabled()) {
+    const row = await prisma.appointment.findUnique({ where: { id } });
+    if (row) {
+      return {
+        ...row,
+        hairHistory: asArray<string>(row.hairHistory),
+        availableSlots: asArray<string>(row.availableSlots),
+        treatmentsDone: asArray<{ id: string; treatmentId: string; treatmentName: string; performedAt: string; notes: string }>(row.treatmentsDone),
+        accountingEntries: asArray<{ id: string; service: string; amount: number; performedBy: string; performedAt: string; notes: string }>(row.accountingEntries),
+        productsUsed: asArray<{ id: string; productId: string; productName: string; brand: string; quantity: number; unit: string; costPrice: number; salePrice: number; usedAt: string; usedBy: string }>(row.productsUsed),
+        pushSubscriptions: asArray(row.pushSubscriptions),
+        notificationLog: asArray<string>(row.notificationLog),
+        createdAt: row.createdAt.toISOString(),
+      };
+    }
+  }
+
+  return getAppointmentById(id);
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const a = getAppointmentById(id);
+  const a = await getAppointmentForInvoice(id);
   return {
     title: a ? `Recibo — ${a.fullName} · Color Studio Gustavo` : 'Recibo',
   };
@@ -14,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function FacturaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const a = getAppointmentById(id);
+  const a = await getAppointmentForInvoice(id);
   if (!a) notFound();
 
   const serviceTotal = (a.accountingEntries ?? []).reduce((s, e) => s + Number(e.amount), 0);

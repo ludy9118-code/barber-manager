@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAppointmentById, updateAppointment } from '@/lib/appointments';
 import { randomUUID } from 'crypto';
+import { prisma } from '@/lib/prisma';
+import { isDbEnabled, asArray, ensureAppointmentRow } from '@/lib/db-helpers';
+import { Prisma } from '@prisma/client';
 
 const ADMIN_KEY = process.env.ADMIN_KEY ?? '12345';
 
@@ -12,7 +15,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   }
 
   const appointment = getAppointmentById(id);
-  if (!appointment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  if (!isDbEnabled() && !appointment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const body = await req.json() as {
     service: string;
@@ -34,6 +37,22 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     performedAt: body.performedAt ?? new Date().toISOString().split('T')[0],
     notes: body.notes?.trim() ?? '',
   };
+
+  if (isDbEnabled()) {
+    const row = await ensureAppointmentRow(id);
+    if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    const updated = await prisma.appointment.update({
+      where: { id },
+      data: {
+        accountingEntries: [...asArray<Record<string, unknown>>(row.accountingEntries), entry] as Prisma.InputJsonValue,
+      },
+    });
+
+    return NextResponse.json({ entry, accountingEntries: asArray(updated.accountingEntries) });
+  }
+
+  if (!appointment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const updated = updateAppointment(id, {
     accountingEntries: [...(appointment.accountingEntries ?? []), entry],

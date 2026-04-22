@@ -7,35 +7,69 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String
-  phone     String?
-  password  String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  
-  appointments Appointment[]
 }
 
 model Appointment {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  fullName    String
-  procedure   String
-  dreamResult String?
-  hairHistory String?
-  currentPhoto String?
-  
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@index([userId])
+  id                String   @id
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  status            String   @default("pending")
+  fullName          String
+  procedure         String
+  dreamResult       String   @default("")
+  referencePhotoPath String  @default("")
+  hairHistory       Json     @default("[]")
+  hairHistoryOther  String   @default("")
+  currentPhotoPath  String   @default("")
+  preferredDates    String   @default("")
+  clientPhone       String   @default("")
+  adminNotes        String   @default("")
+  availableSlots    Json     @default("[]")
+  notifiedAt        String   @default("")
+  confirmedSlot     String   @default("")
+  slotConfirmedAt   String   @default("")
+  slotAccepted      Boolean?
+  treatmentsDone    Json     @default("[]")
+  accountingEntries Json     @default("[]")
+  productsUsed      Json     @default("[]")
+  pushSubscriptions Json     @default("[]")
+  notificationLog   Json     @default("[]")
+
+  @@index([status])
+  @@index([clientPhone])
+}
+
+model Product {
+  id         String   @id
+  name       String
+  brand      String   @default("")
+  barcode    String   @default("")
+  category   String   @default("otro")
+  unit       String   @default("unidad")
+  stock      Int      @default(0)
+  minStock   Int      @default(0)
+  costPrice  Float    @default(0)
+  salePrice  Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([barcode])
+}
+
+model InventoryMovement {
+  id             String   @id
+  productId      String
+  productName    String
+  barcode        String   @default("")
+  unit           String   @default("unidad")
+  quantity       Int
+  type           String
+  reason         String   @default("")
+  by             String   @default("")
+  appointmentId  String   @default("")
+  remainingStock Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
 }

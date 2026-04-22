@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAppointment, getAllAppointments } from '@/lib/appointments';
 import path from 'path';
 import fs from 'fs';
+import { prisma } from '@/lib/prisma';
+import { isDbEnabled } from '@/lib/db-helpers';
+import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 
 const ADMIN_KEY = process.env.ADMIN_KEY ?? '12345';
 
@@ -10,6 +14,12 @@ export async function GET(req: NextRequest) {
   if (key !== ADMIN_KEY) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  if (isDbEnabled()) {
+    const appointments = await prisma.appointment.findMany({ orderBy: { createdAt: 'desc' } });
+    return NextResponse.json(appointments);
+  }
+
   return NextResponse.json(getAllAppointments());
 }
 
@@ -24,7 +34,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const phoneTaken = getAllAppointments().some((a) => a.clientPhone === clientPhone);
+  let phoneTaken = getAllAppointments().some((a) => a.clientPhone === clientPhone);
+  if (isDbEnabled()) {
+    const exists = await prisma.appointment.findFirst({ where: { clientPhone } });
+    phoneTaken = Boolean(exists);
+  }
+
   if (phoneTaken) {
     return NextResponse.json(
       { error: 'Ya existe una solicitud con ese número. Inicia sesión para continuar.' },
@@ -35,7 +50,7 @@ export async function POST(req: NextRequest) {
   const savePath = async (file: File | null, prefix: string): Promise<string> => {
     if (!file || file.size === 0) return '';
     const ext = file.name.split('.').pop() ?? 'jpg';
-    const name = `${prefix}-${Date.now()}.${ext}`;
+    const name = `${prefix}-${randomUUID()}.${ext}`;
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     fs.mkdirSync(uploadDir, { recursive: true });
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -49,7 +64,7 @@ export async function POST(req: NextRequest) {
   const hairHistoryRaw = formData.get('hairHistory') as string;
   const hairHistory: string[] = hairHistoryRaw ? JSON.parse(hairHistoryRaw) : [];
 
-  const appointment = createAppointment({
+  const payload = {
     fullName: (formData.get('fullName') as string) ?? '',
     procedure: (formData.get('procedure') as string) ?? '',
     dreamResult: (formData.get('dreamResult') as string) ?? '',
@@ -59,7 +74,20 @@ export async function POST(req: NextRequest) {
     currentPhotoPath: await savePath(currentPhotoFile, 'current'),
     preferredDates: (formData.get('preferredDates') as string) ?? '',
     clientPhone,
-  });
+  };
+
+  if (isDbEnabled()) {
+    const appointment = await prisma.appointment.create({
+      data: {
+        id: randomUUID(),
+        ...payload,
+        hairHistory: payload.hairHistory as Prisma.InputJsonValue,
+      },
+    });
+    return NextResponse.json({ id: appointment.id }, { status: 201 });
+  }
+
+  const appointment = createAppointment(payload);
 
   return NextResponse.json({ id: appointment.id }, { status: 201 });
 }

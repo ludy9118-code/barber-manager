@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllAppointments } from '@/lib/appointments';
+import { prisma } from '@/lib/prisma';
+import { isDbEnabled } from '@/lib/db-helpers';
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null) as { phone?: string } | null;
@@ -9,7 +11,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'El número de teléfono es obligatorio.' }, { status: 400 });
   }
 
-  const appointment = getAllAppointments().find((a) => a.clientPhone === phone);
+  const appointment = isDbEnabled()
+    ? await prisma.appointment.findFirst({ where: { clientPhone: phone }, orderBy: { createdAt: 'desc' } })
+    : getAllAppointments().find((a) => a.clientPhone === phone);
   if (!appointment) {
     return NextResponse.json({ error: 'No existe una cuenta con ese número de teléfono.' }, { status: 404 });
   }
