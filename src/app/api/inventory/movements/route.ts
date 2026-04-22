@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getInventoryMovements } from '@/lib/inventory-movements';
 import { prisma } from '@/lib/prisma';
 import { isDbEnabled } from '@/lib/db-helpers';
-
-const ADMIN_KEY = process.env.ADMIN_KEY ?? '12345';
+import { isValidAdminKey } from '@/lib/admin-auth';
 
 function checkAuth(req: NextRequest) {
-  return req.headers.get('x-admin-key') === ADMIN_KEY;
+  return isValidAdminKey(req.headers.get('x-admin-key'));
 }
 
 export async function GET(req: NextRequest) {

@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAppointmentById, updateAppointment } from '@/lib/appointments';
 import { sendPushNotification, hasPushConfig } from '@/lib/push';
-
-const ADMIN_KEY = process.env.ADMIN_KEY ?? '12345';
+import { isValidAdminKey } from '@/lib/admin-auth';
 
 export async function POST(req: NextRequest) {
   const key = req.headers.get('x-admin-key');
-  if (key !== ADMIN_KEY) {
+  if (!isValidAdminKey(key)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

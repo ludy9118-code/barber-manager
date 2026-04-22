@@ -4,11 +4,10 @@ import { addInventoryMovement } from '@/lib/inventory-movements';
 import { prisma } from '@/lib/prisma';
 import { isDbEnabled, ensureProductRow } from '@/lib/db-helpers';
 import { randomUUID } from 'crypto';
-
-const ADMIN_KEY = process.env.ADMIN_KEY ?? '12345';
+import { isValidAdminKey } from '@/lib/admin-auth';
 
 function checkAuth(req: NextRequest) {
-  return req.headers.get('x-admin-key') === ADMIN_KEY;
+  return isValidAdminKey(req.headers.get('x-admin-key'));
 }
 
 export async function GET(

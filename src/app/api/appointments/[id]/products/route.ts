@@ -6,11 +6,10 @@ import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { isDbEnabled, asArray, ensureAppointmentRow, ensureProductRow } from '@/lib/db-helpers';
 import { Prisma } from '@prisma/client';
-
-const ADMIN_KEY = process.env.ADMIN_KEY ?? '12345';
+import { isValidAdminKey } from '@/lib/admin-auth';
 
 function checkAuth(req: NextRequest) {
-  return req.headers.get('x-admin-key') === ADMIN_KEY;
+  return isValidAdminKey(req.headers.get('x-admin-key'));
 }
 
 // GET — list products used in this appointment
